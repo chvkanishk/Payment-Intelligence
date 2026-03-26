@@ -16,29 +16,31 @@ async def main():
     print(f"Connecting to database...")
     conn = await asyncpg.connect(settings.database_url)
 
-    pdf_files = list(DOCS_DIR.glob("*.pdf"))
+    files = list(DOCS_DIR.glob("*.pdf")) + list(DOCS_DIR.glob("*.md"))
 
-    if not pdf_files:
-        print(f"No PDFs found in {DOCS_DIR}")
+    if not files:
+        print(f"No files found in {DOCS_DIR}")
         return
 
-    print(f"Found {len(pdf_files)} PDF(s)\n")
+    print(f"Found {len(files)} file(s)\n")
 
     total_chunks = 0
-    for pdf_path in sorted(pdf_files):
-        print(f"  Processing {pdf_path.name}...", end=" ")
+    for file_path in sorted(files):
+        print(f"  Processing {file_path.name}...", end=" ")
         try:
-            text = extract_pdf_text(str(pdf_path))
-            chunks = await ingest_document(conn, pdf_path.name, text)
+            if file_path.suffix == ".pdf":
+                text = extract_pdf_text(str(file_path))
+            else:
+                text = file_path.read_text(encoding="utf-8")
+            chunks = await ingest_document(conn, file_path.name, text)
             print(f"{chunks} chunks stored ✓")
             total_chunks += chunks
         except Exception as e:
             print(f"FAILED — {e}")
 
     await conn.close()
-    print(f"\nDone! {total_chunks} total chunks across {len(pdf_files)} documents.")
+    print(f"\nDone! {total_chunks} total chunks across {len(files)} documents.")
     print("You can now query at: POST /rag/ask")
-
 
 if __name__ == "__main__":
     asyncio.run(main())
