@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from app.core.database import get_pool, close_pool
 from app.core.cache import get_redis, close_redis
 from app.api import rag
-
+from app.api import agent 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -30,6 +30,7 @@ app = FastAPI(
 )
 
 app.include_router(rag.router)
+app.include_router(agent.router)
 
 
 @app.get("/health", tags=["System"])
