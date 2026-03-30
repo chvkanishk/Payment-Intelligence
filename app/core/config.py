@@ -23,6 +23,11 @@ class Settings(BaseSettings):
     # Cache
     cache_ttl: int = 3600  # 1 hour
 
+    # Kafka
+    kafka_bootstrap_servers: str = "localhost:9092"
+    kafka_transactions_topic: str = "transactions"
+    kafka_alerts_topic: str = "alerts"
+
     class Config:
         env_file = ".env"
 
